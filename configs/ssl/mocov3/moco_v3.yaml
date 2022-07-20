@@ -1,0 +1,87 @@
+mocov3: &mocov3
+  type: torch_mocov3
+runtime:
+  task_names: ssl
+dataset: # Required.
+  train:
+    dataset:
+      type: cls
+      kwargs:
+        meta_file: images/meta/train.txt
+        meta_type: moco_imagenet
+        image_reader:
+          type: fs_pillow
+          kwargs:
+            image_dir: images/train
+            color_mode: RGB
+            memcached: true
+        transformer: [*mocov3]
+    batch_sampler:
+      type: base
+      kwargs:
+        sampler:
+          type: dist
+          kwargs: {}
+        batch_size: 128
+    dataloader:
+      type: cls_base
+      kwargs:
+        num_workers: 12
+        pin_memory: true
+
+trainer: # Required.
+  max_epoch: 300
+  test_freq: 500
+  save_freq: 5
+  is_eval: false
+  only_save_latest: true
+  optimizer: # optimizer = SGD(params,lr=0.001,momentum=0.9,weight_decay=0.0001)
+    type: AdamW
+    kwargs:
+      lr: 0.00015
+      weight_decay: 0.1
+  lr_scheduler: # lr_scheduler = MultStepLR(optimizer, milestones=[9,14],gamma=0.1)
+    warmup_iter: 50080
+    warmup_type: linear
+    warmup_register_type: no_scale_lr
+    warmup_ratio: 0
+    type: CosineAnnealingLR
+    kwargs:
+      T_max: 300
+      eta_min: 0.00001
+      warmup_iter: 0
+
+saver: # Required.
+  save_dir: moco_v3_bs1024/checkpoints/cls_std     # dir to save checkpoints
+  results_dir: moco_v3_bs1024/results_dir/cls_std  # dir to save detection results. i.e., bboxes, masks, keypoints
+  auto_resume: true  # find last checkpoint from save_dir and resume from it automatically
+                     # this option has the highest priority (auto_resume > opts > resume_model > pretrain_model)
+
+hooks:
+- type: auto_save_best
+
+net:
+- name: backbone
+  type: ssl
+  multi_model:
+  - name: encoder_q
+    type: moco_vit_small
+    kwargs:
+      stop_grad_conv1: true
+  - name: encoder_k
+    type: moco_vit_small
+    kwargs:
+      stop_grad_conv1: true
+  wrappers:
+  - type: moco_vit
+    kwargs:
+      T: 0.2
+
+- name: post_process
+  type: base_ssl_postprocess
+  kwargs:
+    ssl_loss:
+      type: contrastive_loss
+      kwargs:
+        tau: 0.2
+
