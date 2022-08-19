@@ -1,5 +1,5 @@
 # UniHead
-Official code for "Unifying Visual Perception by Dispersible Points Learning". The implementation is based on [United-Percepion](https://github.com/ModelTC/United-Perception).
+Official code for "[Unifying Visual Perception by Dispersible Points Learning](https://arxiv.org/abs/2208.08630)". The implementation is based on [United-Percepion](https://github.com/ModelTC/United-Perception).
 
 ## Introduction
 UniHead is a plug-in perception head which can be used in different detection frameworks (two-stage or one-stage pipelines), and different tasks (image classification, object detection, instance segmentation and pose estimation).
@@ -29,3 +29,14 @@ More results and models will soon be released.
 ## LICENSE 
 
 This project is released under the MIT license. Please see the [LICENSE](LICENSE) file for more information.
+
+## Citation
+
+```
+@article{liang2022unifying,
+  author  = {Jianming Liang, Guanglu Song, Biao Leng, Yu Liu},
+  journal = {arXiv:2208.08630},
+  title   = {Unifying Visual Perception by Dispersible Points Learning},
+  year    = {2022},
+}
+```
